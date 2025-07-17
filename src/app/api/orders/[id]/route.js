@@ -1,6 +1,6 @@
-import { connectDB } from "@/lib/mongodb";
+import { connectDB } from "../../../../lib/mongodb";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "../[id]/../../../api/auth/[...nextauth]/route"; // Adjust the path as necessary
 import { ObjectId } from 'mongodb';
 
 export async function GET(request, { params }) {

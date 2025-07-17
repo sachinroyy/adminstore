@@ -1,7 +1,7 @@
-import { connectDB } from "@/lib/mongodb";
+import { connectDB } from "../../../lib/mongodb";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-
+import { authOptions } from "../[id]/../../api/auth/[...nextauth]/route"; // Adjust the path as necessary
+ 
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
