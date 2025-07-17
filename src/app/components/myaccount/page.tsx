@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -44,8 +43,10 @@ export default function MyAccount() {
   const anchorRef = useRef(null);
 
   const handleToggle = () => setOpen((prev) => !prev);
-  const handleClose = (event: Event) => {
-    if (anchorRef.current && anchorRef.current.contains(event.target)) return;
+  const handleClose = (
+    event: React.MouseEvent<HTMLElement> | MouseEvent | TouchEvent
+  ) => {
+    if (anchorRef.current && anchorRef.current.contains(event.target as Node)) return;
     setOpen(false);
   };
 
