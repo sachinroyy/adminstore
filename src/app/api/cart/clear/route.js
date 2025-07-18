@@ -1,6 +1,7 @@
 import { connectDB } from '../../../../lib/mongodb';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import NextAuth from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export async function DELETE() {
   try {
