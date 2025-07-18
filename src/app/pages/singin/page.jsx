@@ -4,7 +4,6 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CircularProgress, Box } from '@mui/material';
 
 import {
   Avatar,
@@ -17,7 +16,8 @@ import {
   Alert,
   Stack,
   Divider,
-} from '@mui/material';
+} from "@mui/material";
+
 
 import Image from 'next/image'; // For Google icon
 
