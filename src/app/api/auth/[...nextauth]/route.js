@@ -1,7 +1,14 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
+// For development and production URLs
+const isProduction = process.env.NODE_ENV === 'production';
+const baseUrl = isProduction 
+  ? 'https://storeiiiii.netlify.app' 
+  : 'http://localhost:3000';
+
 const handler = NextAuth({
+  debug: process.env.NODE_ENV === 'development',
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -10,14 +17,12 @@ const handler = NextAuth({
         params: {
           prompt: "consent",
           access_type: "offline",
-          response_type: "code"
-        }
+          response_type: "code",
+          scope: 'openid email profile',
+        },
       },
-      callbacks: {
-        redirect: async ({ url, baseUrl }) => {
-          return `${baseUrl}/api/auth/callback/google`
-        }
-      }
+      // Explicitly set the callback URL
+      callbackUrl: `${baseUrl}/api/auth/callback/google`,
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
@@ -47,8 +52,8 @@ const handler = NextAuth({
     },
   },
   pages: {
-    signIn: "/components/signin",
-    error: "/components/signin",
+    signIn: "/pages/signin",
+    error: "/pages/signin",
   },
   debug: process.env.NODE_ENV === 'development',
 });
