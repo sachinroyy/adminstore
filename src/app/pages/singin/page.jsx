@@ -1,9 +1,10 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { CircularProgress, Box } from '@mui/material';
 
 import {
   Avatar,
@@ -20,7 +21,7 @@ import {
 
 import Image from 'next/image'; // For Google icon
 
-export default function SignInPage() {
+function SignInContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -156,5 +157,17 @@ export default function SignInPage() {
         </Stack>
       </Paper>
     </Container>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+      </Box>
+    }>
+      <SignInContent />
+    </Suspense>
   );
 }
