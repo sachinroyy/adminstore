@@ -1,58 +1,199 @@
 "use client";
-import { Container, Typography, Grid, Card, CardContent, Box } from '@mui/material';
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import SecurityIcon from '@mui/icons-material/Security';
-import PaymentIcon from '@mui/icons-material/Payment';
-import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import { Container, Typography, Box, Button, keyframes } from '@mui/material';
+import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-const features = [
-  {
-    icon: <LocalShippingIcon fontSize="large" color="primary" />,
-    title: "Fast Delivery",
-    description: "Quick and reliable shipping to your doorstep."
-  },
-  {
-    icon: <SecurityIcon fontSize="large" color="primary" />,
-    title: "Secure Payments",
-    description: "100% secure payment processing."
-  },
-  {
-    icon: <PaymentIcon fontSize="large" color="primary" />,
-    title: "Easy Returns",
-    description: "Hassle-free return policy."
-  },
-  {
-    icon: <SupportAgentIcon fontSize="large" color="primary" />,
-    title: "24/7 Support",
-    description: "Round-the-clock customer service."
+// Animation variants
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.3
+    }
   }
-];
+};
 
-export default function FeaturesPage() {
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      duration: 0.5
+    }
+  }
+};
+
+// Pulsing animation
+const pulse = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+`;
+
+export default function AboutPage() {
+  const [isVisible, setIsVisible] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
+
+  const handleButtonClick = () => {
+    router.push('/');
+  };
+
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h3" component="h1" gutterBottom align="center">
-        Our Features
-      </Typography>
-      <Grid container spacing={4} sx={{ mt: 2 }}>
-        {features.map((feature, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
-            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', p: 2, textAlign: 'center' }}>
-              <Box sx={{ my: 2 }}>
-                {feature.icon}
-              </Box>
-              <CardContent>
-                <Typography variant="h5" component="h3" gutterBottom>
-                  {feature.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {feature.description}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </Container>
+    <Box
+      sx={{
+        minHeight: '80vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%)',
+        p: 4
+      }}
+    >
+      <Container maxWidth="md">
+        <motion.div
+          variants={container}
+          initial="hidden"
+          animate={isVisible ? "show" : "hidden"}
+        >
+          <motion.div variants={item}>
+            <Box
+              sx={{
+                textAlign: 'center',
+                mb: 4,
+                animation: `${pulse} 3s ease-in-out infinite`
+              }}
+            >
+              <Typography
+                variant="h1"
+                component="h1"
+                sx={{
+                  fontSize: { xs: '3rem', sm: '4rem', md: '5rem' },
+                  fontWeight: 900,
+                  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  mb: 2
+                }}
+              >
+                Coming Soon
+              </Typography>
+            </Box>
+          </motion.div>
+
+          <motion.div variants={item}>
+            <Typography
+              variant="h5"
+              component="h2"
+              sx={{
+                textAlign: 'center',
+                color: 'text.secondary',
+                mb: 4,
+                fontWeight: 400
+              }}
+            >
+              We're working on something amazing!
+            </Typography>
+          </motion.div>
+
+          <motion.div variants={item}>
+            <Typography
+              variant="body1"
+              sx={{
+                textAlign: 'center',
+                color: 'text.secondary',
+                maxWidth: '600px',
+                mx: 'auto',
+                mb: 6
+              }}
+            >
+              Our team is working hard to bring you an incredible experience.
+              Stay tuned for updates and get ready to be amazed!
+            </Typography>
+          </motion.div>
+
+          <motion.div variants={item}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: 2,
+                mt: 6
+              }}
+            >
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button 
+                  variant="contained" 
+                  color="primary" 
+                  size="large"
+                  onClick={handleButtonClick}
+                  component={motion.button}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                  transition={{ delay: 0.4, duration: 0.5 }}
+                  sx={{
+                    px: 4,
+                    py: 1.5,
+                    fontSize: '1rem',
+                    textTransform: 'none',
+                    borderRadius: '8px',
+                    fontWeight: 600,
+                    boxShadow: '0 4px 14px rgba(0, 0, 0, 0.1)',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 6px 20px rgba(0, 0, 0, 0.15)',
+                    },
+                    transition: 'all 0.3s ease',
+                  }}
+                >
+                  Back to Home
+                </Button>
+              </motion.div>
+
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button 
+                  variant="outlined" 
+                  color="primary" 
+                  size="large"
+                  onClick={handleButtonClick}
+                  component={motion.button}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                  transition={{ delay: 0.4, duration: 0.5 }}
+                  sx={{
+                    px: 4,
+                    py: 1.5,
+                    fontSize: '1rem',
+                    textTransform: 'none',
+                    borderRadius: '8px',
+                    fontWeight: 600,
+                    boxShadow: '0 4px 14px rgba(0, 0, 0, 0.1)',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 6px 20px rgba(0, 0, 0, 0.15)',
+                    },
+                    transition: 'all 0.3s ease',
+                  }}
+                >
+                  Back to Home
+                </Button>
+              </motion.div>
+            </Box>
+          </motion.div>
+        </motion.div>
+      </Container>
+    </Box>
   );
 }

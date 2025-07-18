@@ -166,7 +166,7 @@ const Header = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto' }}>
              {isMobile ? (
                <IconButton 
-                 onClick={() => router.push('/components/singin')}
+                 onClick={() => router.push('/pages/singin')}
                  sx={{ 
                    color: 'text.primary',
                    width: '48px',
@@ -185,7 +185,7 @@ const Header = () => {
                <Button 
                  color="inherit"
                  startIcon={<PersonIcon />}
-                 onClick={() => router.push('/components/singin')}
+                 onClick={() => router.push('/pages/singin')}
                  sx={{ 
                    color: 'text.primary',
                    textTransform: 'none',

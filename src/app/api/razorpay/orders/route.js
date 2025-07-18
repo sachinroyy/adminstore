@@ -1,39 +1,33 @@
 import Razorpay from 'razorpay';
 
-// Validate environment variables
-if (!process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-  console.error('Missing Razorpay credentials in environment variables');
-  console.log('NEXT_PUBLIC_RAZORPAY_KEY_ID:', process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ? '***' : 'Not set');
-  console.log('RAZORPAY_KEY_SECRET:', process.env.RAZORPAY_KEY_SECRET ? '***' : 'Not set');
-  throw new Error('Payment service configuration error: Missing Razorpay credentials');
-}
-
-// Initialize Razorpay
-let razorpay;
-try {
-  razorpay = new Razorpay({
-    key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET,
-  });
-  
-  // Test the connection
-  await razorpay.orders.all({ count: 1 });
-  console.log('Razorpay initialized successfully');
-} catch (error) {
-  console.error('Failed to initialize Razorpay:', error.message);
-  if (error.response) {
-    console.error('Razorpay API Error:', error.response.data);
+// Initialize Razorpay client
+function getRazorpayClient() {
+  // Validate environment variables
+  if (!process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    console.error('Missing Razorpay credentials in environment variables');
+    console.log('NEXT_PUBLIC_RAZORPAY_KEY_ID:', process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ? '***' : 'Not set');
+    console.log('RAZORPAY_KEY_SECRET:', process.env.RAZORPAY_KEY_SECRET ? '***' : 'Not set');
+    throw new Error('Payment service configuration error: Missing Razorpay credentials');
   }
-  throw new Error(`Payment service initialization failed: ${error.message}`);
+
+  try {
+    const razorpay = new Razorpay({
+      key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+    
+    return razorpay;
+  } catch (error) {
+    console.error('Failed to create Razorpay client:', error.message);
+    throw new Error(`Payment service initialization failed: ${error.message}`);
+  }
 }
 
 export async function POST(request) {
   console.log('Received request to create Razorpay order');
   
   try {
-    if (!razorpay) {
-      throw new Error('Razorpay client not initialized');
-    }
+    const razorpay = getRazorpayClient();
 
     const requestBody = await request.json().catch(() => {
       throw new Error('Invalid JSON in request body');
