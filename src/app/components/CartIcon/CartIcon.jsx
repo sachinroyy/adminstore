@@ -7,7 +7,7 @@ import { useCart } from "../../../context/CartContext";
 
 export default function CartIcon() {
   const router = useRouter();
-  const { cartCount } = useCart();
+  const { cart } = useCart();
 
   return (
     <Tooltip title="View Cart">
@@ -22,7 +22,7 @@ export default function CartIcon() {
         }}
       >
         <Badge 
-          badgeContent={cartCount} 
+          badgeContent={cart?.totalItems || 0} 
           color="secondary"
           overlap="circular"
           sx={{

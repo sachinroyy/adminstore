@@ -11,12 +11,9 @@ import {
   Container, 
   CircularProgress, 
   Box,
-  CardActions,
   Button,
   IconButton,
-  Chip,
   Rating,
-  Stack,
   useTheme,
   Snackbar,
   Alert,
@@ -423,7 +420,7 @@ const Products = ({ categoryId  }) => {
               </CardContent>
 
               {/* Add to Cart Button - Mobile */}
-              <CardActions sx={{ p: 2, pt: 0, display: { xs: 'flex', sm: 'none' } }}>
+              {/* <CardActions sx={{ p: 2, pt: 0, display: { xs: 'flex', sm: 'none' } }}>
                 <Button 
                   variant="contained" 
                   color="primary" 
@@ -439,7 +436,7 @@ const Products = ({ categoryId  }) => {
                 >
                   Add to Cart
                 </Button>
-              </CardActions>
+              </CardActions> */}
             </Card>
           </Grid>
         ))}

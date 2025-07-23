@@ -1,7 +1,6 @@
 import { connectDB } from "../../../lib/mongodb";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
-import { ObjectId } from 'mongodb';
 
 export async function GET() {
   try {
@@ -53,6 +52,7 @@ export async function GET() {
   }
 }
 
+// Add or update cart item
 export async function POST(request) {
   try {
     const session = await getServerSession(authOptions);

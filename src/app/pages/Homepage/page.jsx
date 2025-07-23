@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { Divider } from '@mui/material';
 import HeroSection from '../../components/herosection/herosection';
-import Products from '../../components/products/products';
+import Products from '../../components/products/product';
 import Category from '../../components/category/category';
 import AdSlider from '../../components/adsslider';
 import ImageRow from '../../components/ads/adsthree';

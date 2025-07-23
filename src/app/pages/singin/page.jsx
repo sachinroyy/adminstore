@@ -1,173 +1,202 @@
-
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
-import { useSession, signIn } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
-
-import {
-  Avatar,
-  Box,
-  Button,
+import { signIn, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { 
+  Box, 
+  Button, 
+  Card, 
+  CardContent, 
+  Container, 
+  Divider, 
+  Grid, 
+  Typography, 
   CircularProgress,
-  Container,
-  Typography,
-  Paper,
   Alert,
-  Stack,
-  Divider,
-} from "@mui/material";
+  Paper,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
+import { Google as GoogleIcon } from '@mui/icons-material';
 
-
-import Image from 'next/image'; // For Google icon
-
-function SignInContent() {
+export default function SignInPage() {
   const { data: session, status } = useSession();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const errorParam = searchParams.get('error');
-    if (errorParam === 'OAuthAccountNotLinked') {
-      setError('This email is already registered with a different provider.');
-    } else if (errorParam) {
-      setError('An error occurred during sign in. Please try again.');
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (status === 'authenticated') {
-      router.push('/');
+    if (status === "authenticated") {
+      router.push('/'); // Redirect to home page after sign in
     }
   }, [status, router]);
 
-  const handleSignIn = async () => {
+  const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
-      setError('');
-      await signIn('google', { callbackUrl: '/' });
+      setError(null);
+      const result = await signIn('google', { 
+        callbackUrl: '/',
+        redirect: false 
+      });
+      
+      if (result?.error) {
+        setError(result.error);
+      }
     } catch (err) {
-      console.error(err);
-      setError('Failed to sign in. Please try again.');
+      setError('An error occurred during sign in');
+      console.error('Sign in error:', err);
+    } finally {
       setIsLoading(false);
     }
   };
 
-  if (status === 'loading' || status === 'authenticated') {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  if (status === "loading") {
     return (
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          bgcolor: 'grey.100',
-        }}
+      <Box 
+        display="flex" 
+        justifyContent="center" 
+        alignItems="center" 
+        minHeight="100vh"
       >
-        <Stack alignItems="center" spacing={2}>
-          <CircularProgress />
-          <Typography variant="body1" color="text.secondary">
-            Loading...
-          </Typography>
-        </Stack>
+        <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <Container maxWidth="sm" sx={{ py: 10 }}>
-      <Paper elevation={4} sx={{ p: 5, borderRadius: 3 }}>
-        <Stack spacing={3} alignItems="center">
-          <Avatar
-            sx={{ bgcolor: 'primary.main', width: 64, height: 64, fontSize: 32 }}
-          >
-            👋
-          </Avatar>
-
-          <Box textAlign="center">
-            <Typography variant="h4" fontWeight={600}>
-              Welcome Back
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mt={1}>
-              Sign in to your account to continue
-            </Typography>
-          </Box>
-
-          {error && <Alert severity="error">{error}</Alert>}
-
+    <Container component="main" maxWidth="sm">
+      <Box
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          py: 4
+        }}
+      >
+        <Paper 
+          elevation={3}
+          sx={{
+            p: { xs: 3, sm: 4 },
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            borderRadius: 2,
+            background: 'linear-gradient(to bottom right, #ffffff, #f5f5f5)'
+          }}
+        >
+          <Box 
+            component="img"
+            src="/logo.svg" 
+            alt="Logo" 
+            sx={{ 
+              height: 60, 
+              width: 'auto',
+              mb: 2 
+            }} 
+          />
+          
+          <Typography component="h1" variant="h4" sx={{ 
+            fontWeight: 700,
+            mb: 1,
+            background: 'linear-gradient(45deg, #1976d2, #00bcd4)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>
+            Welcome Back
+          </Typography>
+          
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            Sign in to continue to your account
+          </Typography>
+          
+          {error && (
+            <Alert severity="error" sx={{ width: '100%', mb: 3 }}>
+              {error}
+            </Alert>
+          )}
+          
           <Button
             fullWidth
             variant="outlined"
-            onClick={handleSignIn}
+            size="large"
+            onClick={handleGoogleSignIn}
             disabled={isLoading}
+            startIcon={isLoading ? <CircularProgress size={20} /> : <GoogleIcon />}
             sx={{
-              textTransform: 'none',
-              bgcolor: 'white',
-              color: 'rgba(0, 0, 0, 0.6)',
-              borderColor: '#ddd',
-              py: 1.4,
-              fontWeight: 500,
-              fontSize: '1rem',
+              py: 1.5,
+              mb: 3,
+              borderWidth: 2,
               '&:hover': {
-                bgcolor: '#f7f7f7',
+                borderWidth: 2,
               },
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 1.5,
+              textTransform: 'none',
+              fontSize: '1rem',
+              borderRadius: 2
             }}
           >
-            {isLoading ? (
-              <CircularProgress size={20} />
-            ) : (
-              <Image
-                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                alt="Google Logo"
-                width={20}
-                height={20}
-              />
-            )}
-            {isLoading ? 'Signing in...' : 'Sign in with Google'}
+            {isLoading ? 'Signing in...' : 'Continue with Google'}
           </Button>
-
-          <Divider sx={{ width: '100%' }} />
-
-          <Typography variant="body2" textAlign="center" color="text.secondary">
-            By signing in, you agree to our{' '}
-            <Box
-              component="a"
-              href="/terms"
-              sx={{ color: 'primary.main', fontWeight: 500, textDecoration: 'none' }}
+          
+          <Divider sx={{ width: '100%', mb: 3 }}>
+            <Typography variant="body2" color="text.secondary">
+              or
+            </Typography>
+          </Divider>
+          
+          <Typography 
+            variant="body2" 
+            color="text.secondary" 
+            align="center"
+            sx={{ mt: 2, fontSize: '0.75rem' }}
+          >
+            By continuing, you agree to our{' '}
+            <Typography 
+              component="span" 
+              color="primary"
+              sx={{ 
+                cursor: 'pointer',
+                '&:hover': { textDecoration: 'underline' } 
+              }}
             >
               Terms of Service
-            </Box>{' '}
+            </Typography>{' '}
             and{' '}
-            <Box
-              component="a"
-              href="/privacy"
-              sx={{ color: 'primary.main', fontWeight: 500, textDecoration: 'none' }}
+            <Typography 
+              component="span" 
+              color="primary"
+              sx={{ 
+                cursor: 'pointer',
+                '&:hover': { textDecoration: 'underline' } 
+              }}
             >
               Privacy Policy
-            </Box>
-            .
+            </Typography>
           </Typography>
-        </Stack>
-      </Paper>
-    </Container>
-  );
-}
-
-export default function SignInPage() {
-  return (
-    <Suspense fallback={
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-        <CircularProgress />
+        </Paper>
+        
+        <Box sx={{ mt: 3, textAlign: 'center' }}>
+          <Typography variant="body2" color="text.secondary">
+            Don't have an account?{' '}
+            <Typography 
+              component="span" 
+              color="primary" 
+              sx={{ 
+                cursor: 'pointer',
+                fontWeight: 500,
+                '&:hover': { textDecoration: 'underline' } 
+              }}
+            >
+              Sign up
+            </Typography>
+          </Typography>
+        </Box>
       </Box>
-    }>
-      <SignInContent />
-    </Suspense>
+    </Container>
   );
 }

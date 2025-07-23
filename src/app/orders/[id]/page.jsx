@@ -73,6 +73,7 @@ export default function OrderDetailsPage() {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -80,6 +81,14 @@ export default function OrderDetailsPage() {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const calculateTotal = (items) => {
+    return items?.reduce((total, item) => {
+      const price = parseFloat(item.price) || 0;
+      const quantity = parseInt(item.quantity) || 0;
+      return total + (price * quantity);
+    }, 0) || 0;
   };
 
   if (!session) {
@@ -101,7 +110,7 @@ export default function OrderDetailsPage() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
         <CircularProgress />
       </Box>
     );
@@ -109,15 +118,13 @@ export default function OrderDetailsPage() {
 
   if (error || !order) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
         <Typography variant="h5" color="error" gutterBottom>
           {error || 'Order not found'}
         </Typography>
         <Button 
-          variant="outlined" 
-          color="primary" 
+          startIcon={<ArrowBackIcon />} 
           onClick={() => router.push('/orders')}
-          startIcon={<ArrowBackIcon />}
           sx={{ mt: 2 }}
         >
           Back to Orders
@@ -136,193 +143,148 @@ export default function OrderDetailsPage() {
         Back to Orders
       </Button>
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4">
-          Order #{order._id.slice(-6).toUpperCase()}
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Order #{order.orderNumber || id}
         </Typography>
         <Chip 
-          label={order.status}
+          label={order.status || 'Unknown'} 
           color={getStatusColor(order.status)}
-          sx={{ textTransform: 'capitalize', fontWeight: 600 }}
+          size="medium"
         />
       </Box>
 
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={3}>
+        {/* Order Items */}
+        <Grid item xs={12} md={8}>
+          <Paper sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" gutterBottom>Order Items</Typography>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Product</TableCell>
+                    <TableCell align="right">Price</TableCell>
+                    <TableCell align="center">Quantity</TableCell>
+                    <TableCell align="right">Total</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {order.items?.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <Box display="flex" alignItems="center">
+                          {item.image && (
+                            <Box sx={{ width: 64, height: 64, mr: 2, position: 'relative' }}>
+                              <Image
+                                src={item.image}
+                                alt={item.name}
+                                fill
+                                style={{ objectFit: 'contain' }}
+                              />
+                            </Box>
+                          )}
+                          <div>
+                            <Typography variant="body1">{item.name}</Typography>
+                            {item.variant && (
+                              <Typography variant="body2" color="textSecondary">
+                                {item.variant}
+                              </Typography>
+                            )}
+                          </div>
+                        </Box>
+                      </TableCell>
+                      <TableCell align="right">${parseFloat(item.price || 0).toFixed(2)}</TableCell>
+                      <TableCell align="center">{item.quantity}</TableCell>
+                      <TableCell align="right">
+                        ${(parseFloat(item.price || 0) * parseInt(item.quantity || 0)).toFixed(2)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        </Grid>
+
+        {/* Order Summary */}
         <Grid item xs={12} md={4}>
-          <Paper elevation={0} variant="outlined" sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6" gutterBottom>
-              Order Information
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <List dense>
-              <ListItem disablePadding sx={{ py: 0.5 }}>
-                <ListItemText 
-                  primary="Order Date" 
-                  secondary={formatDate(order.createdAt)} 
-                />
+          <Paper sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" gutterBottom>Order Summary</Typography>
+            <List>
+              <ListItem>
+                <ListItemText primary="Order Date" />
+                <Typography>{formatDate(order.createdAt)}</Typography>
               </ListItem>
-              <ListItem disablePadding sx={{ py: 0.5 }}>
-                <ListItemText 
-                  primary="Order Total" 
-                  secondary={`₹${order.total.toFixed(2)}`} 
-                />
+              <Divider component="li" />
+              <ListItem>
+                <ListItemText primary="Subtotal" />
+                <Typography>${calculateTotal(order.items).toFixed(2)}</Typography>
               </ListItem>
-              <ListItem disablePadding sx={{ py: 0.5 }}>
+              <ListItem>
+                <ListItemText primary="Shipping" />
+                <Typography>${parseFloat(order.shippingCost || 0).toFixed(2)}</Typography>
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Tax" />
+                <Typography>${parseFloat(order.tax || 0).toFixed(2)}</Typography>
+              </ListItem>
+              <Divider component="li" />
+              <ListItem>
                 <ListItemText 
-                  primary="Payment Method" 
-                  secondary={order.paymentMethod || 'Not specified'} 
+                  primary={<strong>Total</strong>} 
+                  primaryTypographyProps={{ fontWeight: 'bold' }} 
                 />
+                <Typography variant="h6">
+                  ${(
+                    calculateTotal(order.items) + 
+                    parseFloat(order.shippingCost || 0) + 
+                    parseFloat(order.tax || 0)
+                  ).toFixed(2)}
+                </Typography>
               </ListItem>
             </List>
           </Paper>
-        </Grid>
 
-        <Grid item xs={12} md={4}>
-          <Paper elevation={0} variant="outlined" sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6" gutterBottom>
-              Shipping Address
+          {/* Shipping Information */}
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>Shipping Information</Typography>
+            <Typography>
+              {order.shippingAddress?.name || 'N/A'}<br />
+              {order.shippingAddress?.street}<br />
+              {order.shippingAddress?.city}, {order.shippingAddress?.state} {order.shippingAddress?.postalCode}<br />
+              {order.shippingAddress?.country}
             </Typography>
-            <Divider sx={{ mb: 2 }} />
-            {order.shippingAddress ? (
-              <Box>
-                <Typography>{order.shippingAddress.name}</Typography>
-                <Typography>{order.shippingAddress.address}</Typography>
-                <Typography>
-                  {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zip}
+            
+            <Typography variant="subtitle2" sx={{ mt: 2, fontWeight: 'bold' }}>
+              Contact Information
+            </Typography>
+            <Typography>
+              {order.customerEmail || 'N/A'}<br />
+              {order.shippingAddress?.phone || 'N/A'}
+            </Typography>
+
+            {order.trackingNumber && (
+              <>
+                <Typography variant="subtitle2" sx={{ mt: 2, fontWeight: 'bold' }}>
+                  Tracking Information
                 </Typography>
-                <Typography>Phone: {order.shippingAddress.phone}</Typography>
-              </Box>
-            ) : (
-              <Typography color="text.secondary">No shipping address provided</Typography>
+                <Typography>Tracking #: {order.trackingNumber}</Typography>
+                {order.trackingUrl && (
+                  <Button 
+                    variant="outlined" 
+                    size="small" 
+                    sx={{ mt: 1 }}
+                    onClick={() => window.open(order.trackingUrl, '_blank')}
+                  >
+                    Track Package
+                  </Button>
+                )}
+              </>
             )}
           </Paper>
         </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Paper elevation={0} variant="outlined" sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6" gutterBottom>
-              Order Status
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Current Status
-                </Typography>
-                <Chip 
-                  label={order.status}
-                  color={getStatusColor(order.status)}
-                  size="small"
-                  sx={{ mt: 1 }}
-                />
-              </Box>
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Last Updated
-                </Typography>
-                <Typography variant="body2">
-                  {formatDate(order.updatedAt || order.createdAt)}
-                </Typography>
-              </Box>
-            </Box>
-          </Paper>
-        </Grid>
       </Grid>
-
-      <Paper elevation={0} variant="outlined" sx={{ mb: 4 }}>
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Product</TableCell>
-                <TableCell align="right">Price</TableCell>
-                <TableCell align="center">Quantity</TableCell>
-                <TableCell align="right">Total</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {order.items.map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Box sx={{ width: 80, height: 80, position: 'relative' }}>
-                        <Image
-                          src={item.image || '/placeholder-product.jpg'}
-                          alt={item.name}
-                          fill
-                          style={{ objectFit: 'contain' }}
-                        />
-                      </Box>
-                      <Box>
-                        <Typography variant="body1">{item.name}</Typography>
-                        {item.category && (
-                          <Typography variant="body2" color="text.secondary">
-                            {item.category}
-                          </Typography>
-                        )}
-                      </Box>
-                    </Box>
-                  </TableCell>
-                  <TableCell align="right">
-                    ₹{item.price.toFixed(2)}
-                  </TableCell>
-                  <TableCell align="center">
-                    {item.quantity}
-                  </TableCell>
-                  <TableCell align="right">
-                    ₹{(item.price * item.quantity).toFixed(2)}
-                  </TableCell>
-                </TableRow>
-              ))}
-              <TableRow>
-                <TableCell rowSpan={3} colSpan={2} />
-                <TableCell colSpan={1}>
-                  <Typography variant="subtitle2">Subtotal</Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography>₹{order.total.toFixed(2)}</Typography>
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell colSpan={1}>
-                  <Typography variant="subtitle2">Shipping</Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography>Free</Typography>
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell colSpan={1}>
-                  <Typography variant="subtitle1" fontWeight="bold">Total</Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="subtitle1" fontWeight="bold">
-                    ₹{order.total.toFixed(2)}
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
-
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-        <Button 
-          variant="outlined" 
-          onClick={() => router.push('/orders')}
-        >
-          Back to Orders
-        </Button>
-        {order.status.toLowerCase() !== 'cancelled' && (
-          <Button 
-            variant="contained" 
-            color="error"
-            // Add cancel order functionality here
-          >
-            Cancel Order
-          </Button>
-        )}
-      </Box>
     </Container>
   );
 }

@@ -69,7 +69,7 @@ const InformationBar = () => {
       </Button>
       <Divider orientation="vertical" flexItem />
       <Button 
-        onClick={() => router.push('/components/myaccount')}
+        onClick={() => router.push('/pages/myaccount')}
         color="inherit" 
         size="small"
         startIcon={<PersonIcon fontSize="small" />}
@@ -220,7 +220,7 @@ const InformationBar = () => {
         }}
       >
         <MenuItem component="a" href="/pages/about" onClick={handleMenuClose} sx={{ py: 1.5 }}>About Us</MenuItem>
-        <MenuItem component="a" href="/account" onClick={handleMenuClose} sx={{ py: 1.5 }}>
+        <MenuItem component="a" href="/pages/myaccount" onClick={handleMenuClose} sx={{ py: 1.5 }}>
           <PersonIcon sx={{ mr: 1, fontSize: '1.25rem' }} /> My Account
         </MenuItem>
         <MenuItem component="a" href="/pages/wishlist" onClick={handleMenuClose} sx={{ py: 1.5 }}>
