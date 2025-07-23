@@ -50,7 +50,7 @@ export default function DealOfTheDay() {
   useEffect(() => {
     const fetchDeals = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/deals');
+        const response = await fetch('https://store-2b74.vercel.app/api/deals');
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         

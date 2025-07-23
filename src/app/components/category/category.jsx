@@ -22,7 +22,7 @@ const Category = ({ onCategorySelect, selectedCategory }) => {
     const fetchProducts = async () => {
       try {
         console.log('Fetching products from API...');
-        const res = await fetch("http://localhost:3000/api/category");
+        const res = await fetch("https://store-2b74.vercel.app/api/category");
         console.log('API Response Status:', res.status);
         const data = await res.json();
         console.log('API Response Data:', data);

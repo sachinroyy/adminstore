@@ -90,7 +90,7 @@ const Products = ({ categoryId  }) => {
       try {
         setLoading(true);
         console.log('Fetching products from API...');
-        let url = "http://localhost:3000/api/products";
+        let url = "https://store-2b74.vercel.app/api/products";
         if (categoryId) {
           url += `?category=${categoryId}`;
         }
