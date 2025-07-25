@@ -1,7 +1,6 @@
 import { connectDB } from '../../../../lib/mongodb';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../auth/[...nextauth]/route';
-import { ObjectId } from 'mongodb';
 
 export async function PUT(request) {
   try {
@@ -14,8 +13,8 @@ export async function PUT(request) {
     }
 
     const { productId, quantity } = await request.json();
-    const db = await connectDB();
-
+    const { db } = await connectDB();
+    const ObjectId = require('mongodb').ObjectId;    
     // Validate product ID
     if (!productId || !ObjectId.isValid(productId)) {
       return new Response(JSON.stringify({ error: 'Invalid product ID' }), {

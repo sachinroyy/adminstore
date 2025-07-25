@@ -91,6 +91,7 @@ const Products = ({ categoryId  }) => {
         setLoading(true);
         console.log('Fetching products from API...');
         let url = "https://store-2b74.vercel.app/api/products";
+
         if (categoryId) {
           url += `?category=${categoryId}`;
         }
@@ -195,7 +196,7 @@ const Products = ({ categoryId  }) => {
       
       <Grid container spacing={6} justifyContent="center" sx={{ width: '100%', mb: 4, minHeight: showAll ? 'auto' : '800px' }}>
         {(showAll ? products : products.slice((page - 1) * productsPerPage, page * productsPerPage)).map((product) => (
-          <Grid item key={product._id} xs={12} sm={6} md={4} lg={3} sx={{ display: 'flex', justifyContent: 'center' }}>
+          <Grid item key={product._id} xs={4} sm={4} md={3} lg={3} sx={{ display: 'flex', justifyContent: 'center' }}>
             <Card 
               sx={{ 
                 width: '400px',
@@ -315,17 +316,7 @@ const Products = ({ categoryId  }) => {
                   >
                     {isInCart(product._id) ? 'Added to Cart' : 'Add to Cart'}
                   </Button>
-                  <Button 
-                    variant="outlined" 
-                    color="primary" 
-                    size="small"
-                    startIcon={<FlashOn />}
-                    sx={{ 
-                      minWidth: 'auto',
-                      borderRadius: '50%',
-                      p: 1,
-                    }}
-                  />
+                 
                 </Box>
               </Box>
 
