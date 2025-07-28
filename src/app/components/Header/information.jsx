@@ -94,14 +94,14 @@ const InformationBar = () => {
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 3   }}>
       <Button 
         color="inherit" 
-        endIcon={<ExpandMoreIcon />}
+        // endIcon={<ExpandMoreIcon />}
         onClick={handleLanguageClick}
         size="small"
         sx={{ color: 'text.secondary' }}
       >
         English
       </Button>
-      <Menu
+      {/* <Menu
         anchorEl={languageAnchor}
         open={Boolean(languageAnchor)}
         onClose={handleMenuClose}
@@ -129,9 +129,9 @@ const InformationBar = () => {
         <MenuItem onClick={handleMenuClose} dense>English</MenuItem>
         <MenuItem onClick={handleMenuClose} dense>Español</MenuItem>
         <MenuItem onClick={handleMenuClose} dense>Français</MenuItem>
-      </Menu>
+      </Menu> */}
 
-      <Button 
+      {/* <Button 
         color="inherit" 
         endIcon={<ExpandMoreIcon />}
         onClick={handleCurrencyClick}
@@ -139,7 +139,7 @@ const InformationBar = () => {
         sx={{ color: 'text.secondary' }}
       >
         USD
-      </Button>
+      </Button> */}
       <Menu
         anchorEl={currencyAnchor}
         open={Boolean(currencyAnchor)}

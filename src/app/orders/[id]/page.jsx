@@ -22,7 +22,7 @@ import {
   CircularProgress,
   useTheme
 } from '@mui/material';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -32,11 +32,19 @@ export default function OrderDetailsPage() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
   const { data: session } = useSession();
   const router = useRouter();
   const theme = useTheme();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
+    // Check for payment success in URL params
+    const paymentStatus = searchParams.get('payment_success');
+    if (paymentStatus === 'true') {
+      setPaymentSuccess(true);
+    }
+
     const fetchOrder = async () => {
       if (!session) return;
       
@@ -133,8 +141,65 @@ export default function OrderDetailsPage() {
     );
   }
 
+  const getOrderStatusSteps = () => {
+    const statuses = [
+      { id: 'processing', label: 'Processing' },
+      { id: 'confirmed', label: 'Confirmed' },
+      { id: 'shipped', label: 'Shipped' },
+      { id: 'out_for_delivery', label: 'Out for Delivery' },
+      { id: 'delivered', label: 'Delivered' }
+    ];
+
+    const currentStatusIndex = statuses.findIndex(s => s.id === order.status) || 0;
+    
+    return (
+      <Box sx={{ mb: 4, p: 3, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1 }}>
+        <Typography variant="h6" gutterBottom>Order Status</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', position: 'relative', mt: 2 }}>
+          {statuses.map((status, index) => (
+            <Box key={status.id} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }}>
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  bgcolor: index <= currentStatusIndex ? 'primary.main' : 'grey.300',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: index <= currentStatusIndex ? 'white' : 'text.secondary',
+                  mb: 1
+                }}
+              >
+                {index + 1}
+              </Box>
+              <Typography variant="caption" align="center">{status.label}</Typography>
+            </Box>
+          ))}
+          <Box 
+            sx={{
+              position: 'absolute',
+              top: '20px',
+              left: '20%',
+              right: '20%',
+              height: '2px',
+              bgcolor: 'divider',
+              zIndex: 0
+            }}
+          />
+        </Box>
+      </Box>
+    );
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      {paymentSuccess && (
+        <Alert severity="success" sx={{ mb: 3 }}>
+          Payment successful! Your order has been placed. Order ID: {order.orderNumber || id}
+        </Alert>
+      )}
+      
       <Button 
         startIcon={<ArrowBackIcon />} 
         onClick={() => router.push('/orders')}
@@ -143,10 +208,18 @@ export default function OrderDetailsPage() {
         Back to Orders
       </Button>
 
+      {/* Order Status Timeline */}
+      {getOrderStatusSteps()}
+
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Order #{order.orderNumber || id}
-        </Typography>
+        <Box>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Order #{order.orderNumber || id}
+          </Typography>
+          <Typography variant="subtitle1" color="text.secondary">
+            Placed on {formatDate(order.createdAt)}
+          </Typography>
+        </Box>
         <Chip 
           label={order.status || 'Unknown'} 
           color={getStatusColor(order.status)}

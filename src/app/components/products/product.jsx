@@ -11,7 +11,7 @@ import {
   Container, 
   CircularProgress, 
   Box,
-  Button,
+  Button, 
   IconButton,
   Rating,
   useTheme,
@@ -21,10 +21,12 @@ import {
 } from '@mui/material';
 import { AddShoppingCart, FavoriteBorder, Favorite, Share, FlashOn } from '@mui/icons-material';
 import { useCart } from "../../../context/CartContext";
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
-const Products = ({ categoryId  }) => {
+const Products = ({ categoryId }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,19 +35,50 @@ const Products = ({ categoryId  }) => {
   const [showAll, setShowAll] = useState(false);
   const productsPerPage = 8; // 2 rows x 4 items per row
   const theme = useTheme();
-  const { addToCart, cart } = useCart();
+  const { addToCart, cart, updateQuantity } = useCart();
+  
+  // Get cart quantity for a product
+  const getCartQuantity = (productId) => {
+    const cartItem = cart.items.find(item => item.productId === productId);
+    return cartItem ? cartItem.quantity : 0;
+  };
 
-  const handleAddToCart = async (product) => {
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  const handleAddToCart = async (product, quantity = 1) => {
     try {
-      // Ensure we have a valid image URL
+      // Check if user is not signed in
+      if (!session) {
+        // Store the product in sessionStorage to add after sign in
+        const productToAdd = {
+          _id: product._id,
+          name: product.name,
+          price: product.price,
+          image: Array.isArray(product.images) && product.images.length > 0 
+            ? product.images[0] 
+            : (product.image || null),
+          quantity: quantity
+        };
+        
+        // Store the product in sessionStorage
+        sessionStorage.setItem('productToAdd', JSON.stringify(productToAdd));
+        
+        // Redirect to sign-in page with callback URL
+        router.push(`/pages/singin?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
+        return;
+      }
+
+      // If user is signed in, proceed with adding to cart
       const imageUrl = Array.isArray(product.images) && product.images.length > 0 
         ? product.images[0] 
         : (product.image || null);
       
-      console.log('Adding to cart:', {
+      console.log('Updating cart:', {
         _id: product._id,
         name: product.name,
         price: product.price,
+        quantity: quantity,
         image: imageUrl
       });
 
@@ -54,25 +87,47 @@ const Products = ({ categoryId  }) => {
         name: product.name,
         price: product.price,
         image: imageUrl,
-        quantity: 1
+        quantity: quantity
       });
       
       if (result.success) {
         setSnackbar({
           open: true,
-          message: 'Product added to cart!',
+          message: quantity > 0 
+            ? quantity === 1 
+              ? 'Product added to cart!' 
+              : `${quantity} items added to cart!`
+            : 'Product removed from cart!',
           severity: 'success'
         });
       } else {
-        throw new Error(result.error || 'Failed to add to cart');
+        throw new Error(result.error || 'Failed to update cart');
       }
     } catch (error) {
-      console.error('Error adding to cart:', error);
+      console.error('Error updating cart:', error);
       setSnackbar({
         open: true,
-        message: error.message || 'Failed to add product to cart',
+        message: error.message || 'Failed to update cart',
         severity: 'error'
       });
+    }
+  };
+  
+  const handleIncrement = async (product) => {
+    const currentQty = getCartQuantity(product._id);
+    await updateQuantity(product._id, currentQty + 1);
+  };
+  
+  const handleDecrement = async (product) => {
+    const currentQty = getCartQuantity(product._id);
+    const newQty = currentQty - 1;
+    
+    if (newQty > 0) {
+      // If quantity is still greater than 0, update the quantity
+      await updateQuantity(product._id, newQty);
+    } else {
+      // If quantity would be 0 or less, remove the item from cart
+      await updateQuantity(product._id, 0);
     }
   };
 
@@ -195,7 +250,13 @@ const Products = ({ categoryId  }) => {
       </Box>
       
       <Grid container spacing={6} justifyContent="center" sx={{ width: '100%', mb: 4, minHeight: showAll ? 'auto' : '800px' }}>
-        {(showAll ? products : products.slice((page - 1) * productsPerPage, page * productsPerPage)).map((product) => (
+        {(showAll ? products : products.slice((page - 1) * productsPerPage, page * productsPerPage))
+          .filter(product => {
+            // Only show products that are not in cart or have quantity > 0
+            const cartItem = cart.items?.find(item => item.productId === product._id);
+            return !cartItem || cartItem.quantity > 0;
+          })
+          .map((product) => (
           <Grid item key={product._id} xs={4} sm={4} md={3} lg={3} sx={{ display: 'flex', justifyContent: 'center' }}>
             <Card 
               sx={{ 
@@ -209,6 +270,7 @@ const Products = ({ categoryId  }) => {
                 overflow: 'hidden',
                 position: 'relative',
                 transition: 'all 0.3s ease-in-out',
+                cursor: 'pointer',
                 '&:hover': {
                   transform: 'translateY(-8px)',
                   boxShadow: '0 12px 28px rgba(0, 0, 0, 0.12)',
@@ -220,6 +282,12 @@ const Products = ({ categoryId  }) => {
                     transform: 'scale(1.05)',
                   }
                 },
+              }}
+              onClick={(e) => {
+                if (e.target.closest('.product-actions') || e.target.closest('.wishlist-button')) {
+                  return;
+                }
+                router.push(`/pages/product/${product._id}?id=${product._id}`);
               }}
             >
               {/* Discount Badge */}
@@ -306,17 +374,85 @@ const Products = ({ categoryId  }) => {
                   opacity: 0,
                   transition: 'all 0.3s ease',
                 }}>
-                  <Button 
-                    size="small" 
-                    color="primary"
-                    startIcon={isInCart(product._id) ? <CheckCircleOutlineIcon /> : <AddShoppingCartIcon />}
-                    onClick={() => handleAddToCart(product)}
-                    variant={isInCart(product._id) ? 'contained' : 'outlined'}
-                    disabled={product.stock <= 0}
-                  >
-                    {isInCart(product._id) ? 'Added to Cart' : 'Add to Cart'}
-                  </Button>
-                 
+                  {getCartQuantity(product._id) >= 1 ? (
+                    <Box 
+                      sx={{ 
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        backgroundColor: 'background.paper',
+                        borderRadius: 1,
+                        px: 1,
+                        py: 0.5,
+                        width: '100%',
+                        justifyContent: 'space-between'
+                      }}
+                    >
+                      <IconButton 
+                        size="small" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDecrement(product);
+                        }}
+                        disabled={product.stock <= 0}
+                        color="primary"
+                        sx={{ p: 0.5 }}
+                      >
+                        -
+                      </IconButton>
+                      <Typography variant="body1" sx={{ minWidth: '24px', textAlign: 'center' }}>
+                        {getCartQuantity(product._id)}
+                      </Typography>
+                      <IconButton 
+                        size="small" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleIncrement(product);
+                        }}
+                        sx={{ 
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          borderRadius: 1,
+                          minWidth: '32px',
+                          height: '32px'
+                        }}
+                      >
+                        +
+                      </IconButton>
+                    </Box>
+                  ) : getCartQuantity(product._id) === 0 ? (
+                    <Button 
+                      size="small" 
+                      color="primary"
+                      startIcon={<CheckCircleOutlineIcon />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToCart(product, 1);
+                      }}
+                      variant="outlined"
+                      disabled={product.stock <= 0}
+                      fullWidth
+                      sx={{ whiteSpace: 'nowrap' }}
+                    >
+                      Added to Cart
+                    </Button>
+                  ) : (
+                    <Button 
+                      size="small" 
+                      color="primary"
+                      startIcon={<AddShoppingCartIcon />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToCart(product, 1);
+                      }}
+                      variant="outlined"
+                      disabled={product.stock <= 0}
+                      fullWidth
+                      sx={{ whiteSpace: 'nowrap' }}
+                    >
+                      Add to Cart
+                    </Button>
+                  )}
                 </Box>
               </Box>
 
@@ -410,24 +546,7 @@ const Products = ({ categoryId  }) => {
                 </Box>
               </CardContent>
 
-              {/* Add to Cart Button - Mobile */}
-              {/* <CardActions sx={{ p: 2, pt: 0, display: { xs: 'flex', sm: 'none' } }}>
-                <Button 
-                  variant="contained" 
-                  color="primary" 
-                  fullWidth
-                  startIcon={<AddShoppingCart />}
-                  sx={{ 
-                    borderRadius: '8px',
-                    py: 1,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    fontSize: '0.875rem',
-                  }}
-                >
-                  Add to Cart
-                </Button>
-              </CardActions> */}
+            
             </Card>
           </Grid>
         ))}

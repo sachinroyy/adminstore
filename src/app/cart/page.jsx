@@ -57,9 +57,58 @@ export default function CartPage() {
     }
   }, [session]);
 
-  const handleQuantityChange = (productId, newQuantity) => {
-    if (newQuantity >= 1) {
-      updateQuantity(productId, newQuantity);
+  const [updatingItems, setUpdatingItems] = useState({});
+
+  const handleQuantityChange = async (productId, newQuantity) => {
+    const quantity = Math.max(1, Math.min(100, parseInt(newQuantity, 10) || 1));
+    
+    try {
+      setUpdatingItems(prev => ({ ...prev, [productId]: true }));
+      
+      const result = await updateQuantity(productId, quantity);
+      
+      if (!result.success) {
+        setSnackbar({
+          open: true,
+          message: result.error || 'Failed to update quantity',
+          severity: 'error'
+        });
+      }
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+      setSnackbar({
+        open: true,
+        message: 'An error occurred while updating quantity',
+        severity: 'error'
+      });
+    } finally {
+      setUpdatingItems(prev => ({ ...prev, [productId]: false }));
+    }
+  };
+
+  const incrementQuantity = async (productId, currentQuantity) => {
+    await handleQuantityChange(productId, currentQuantity + 1);
+  };
+
+  const decrementQuantity = async (productId, currentQuantity) => {
+    if (currentQuantity <= 1) {
+      // If quantity is 1 or less, remove the item
+      try {
+        setUpdatingItems(prev => ({ ...prev, [productId]: true }));
+        await removeFromCart(productId);
+      } catch (error) {
+        console.error('Error removing item:', error);
+        setSnackbar({
+          open: true,
+          message: 'Failed to remove item from cart',
+          severity: 'error'
+        });
+      } finally {
+        setUpdatingItems(prev => ({ ...prev, [productId]: false }));
+      }
+    } else {
+      // Otherwise, just decrement the quantity
+      await handleQuantityChange(productId, currentQuantity - 1);
     }
   };
 
@@ -76,6 +125,16 @@ export default function CartPage() {
 
   const processOrder = async (paymentData) => {
     try {
+      // Show loading state
+      setIsProcessing(true);
+      setSnackbar({
+        open: true,
+        message: 'Processing your order...',
+        severity: 'info',
+        autoHideDuration: null // Don't auto-hide
+      });
+
+      // Create the order
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: {
@@ -97,13 +156,28 @@ export default function CartPage() {
       }
 
       const order = await response.json();
+      
+      // Clear the cart
       await clearCart();
-      router.push(`/orders/${order._id}?payment_success=true`);
+      
+      // Show success message
+      setSnackbar({
+        open: true,
+        message: 'Order placed successfully! Redirecting to order details...',
+        severity: 'success',
+        autoHideDuration: 2000
+      });
+      
+      // Navigate to order details after a short delay
+      setTimeout(() => {
+        router.push(`/orders/${order._id}?payment_success=true`);
+      }, 1500);
+      
     } catch (error) {
       console.error('Error processing order:', error);
       setSnackbar({
         open: true,
-        message: error.message || 'Failed to process order. Please contact support.',
+        message: `Error: ${error.message || 'Failed to process order. Please contact support.'}`,
         severity: 'error'
       });
     } finally {
@@ -374,7 +448,6 @@ export default function CartPage() {
                   <TableCell align="right">Price</TableCell>
                   <TableCell align="center">Quantity</TableCell>
                   <TableCell align="right">Total</TableCell>
-                  <TableCell align="right">Action</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -416,29 +489,61 @@ export default function CartPage() {
                         ₹{safeItem.price.toFixed(2)}
                       </TableCell>
                       <TableCell align="center">
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box display="flex" alignItems="center">
                           <IconButton 
-                            size="small" 
-                            onClick={() => handleQuantityChange(safeItem.productId, safeItem.quantity - 1)}
-                          >
-                            <RemoveIcon fontSize="small" />
-                          </IconButton>
-                          <TextField
+                            onClick={() => decrementQuantity(item.productId, item.quantity)}
+                            disabled={updatingItems[item.productId]}
                             size="small"
-                            value={safeItem.quantity}
-                            onChange={(e) => handleQuantityChange(safeItem.productId, Math.max(1, parseInt(e.target.value) || 1))}
-                            inputProps={{ 
-                              style: { textAlign: 'center', width: '40px' },
-                              min: 1,
-                              type: 'number'
-                            }}
-                            variant="outlined"
-                          />
-                          <IconButton 
-                            size="small" 
-                            onClick={() => handleQuantityChange(safeItem.productId, safeItem.quantity + 1)}
+                            aria-label={item.quantity <= 1 ? "Remove item" : "Decrease quantity"}
+                            color={item.quantity <= 1 ? "error" : "default"}
                           >
-                            <AddIcon fontSize="small" />
+                            {updatingItems[item.productId] ? (
+                              <CircularProgress size={20} />
+                            ) : item.quantity <= 1 ? (
+                              <DeleteIcon fontSize="small" />
+                            ) : (
+                              <RemoveIcon fontSize="small" />
+                            )}
+                          </IconButton>
+                          
+                          <TextField
+                            type="number"
+                            value={item.quantity}
+                            onChange={(e) => handleQuantityChange(item.productId, e.target.value)}
+                            onBlur={(e) => handleQuantityChange(item.productId, e.target.value)}
+                            inputProps={{ 
+                              min: 1, 
+                              max: 100,
+                              'aria-label': `Quantity for ${item.name}`
+                            }}
+                            size="small"
+                            sx={{ 
+                              width: '60px', 
+                              mx: 1,
+                              '& .MuiOutlinedInput-input': { 
+                                textAlign: 'center',
+                                padding: '8.5px 8px',
+                                '-moz-appearance': 'textfield'
+                              },
+                              '& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button': {
+                                '-webkit-appearance': 'none',
+                                margin: 0
+                              }
+                            }}
+                            disabled={updatingItems[item.productId]}
+                          />
+                          
+                          <IconButton 
+                            onClick={() => incrementQuantity(item.productId, item.quantity)}
+                            disabled={item.quantity >= 100 || updatingItems[item.productId]}
+                            size="small"
+                            aria-label="Increase quantity"
+                          >
+                            {updatingItems[item.productId] ? (
+                              <CircularProgress size={20} />
+                            ) : (
+                              <AddIcon fontSize="small" />
+                            )}
                           </IconButton>
                         </Box>
                       </TableCell>
@@ -447,10 +552,39 @@ export default function CartPage() {
                       </TableCell>
                       <TableCell align="right">
                         <IconButton 
-                          onClick={() => removeFromCart(safeItem.productId)}
+                          onClick={async () => {
+                            try {
+                              setUpdatingItems(prev => ({ ...prev, [item.productId]: true }));
+                              const result = await removeFromCart(item.productId);
+                              if (!result.success) {
+                                setSnackbar({
+                                  open: true,
+                                  message: 'Failed to remove item from cart',
+                                  severity: 'error'
+                                });
+                              } else {
+                                setSnackbar({
+                                  open: true,
+                                  message: 'Item removed from cart',
+                                  severity: 'success'
+                                });
+                              }
+                            } catch (error) {
+                              console.error('Error removing item:', error);
+                              setSnackbar({
+                                open: true,
+                                message: 'Error removing item from cart',
+                                severity: 'error'
+                              });
+                            } finally {
+                              setUpdatingItems(prev => ({ ...prev, [item.productId]: false }));
+                            }
+                          }}
                           color="error"
+                          size="small"
+                          disabled={updatingItems[item.productId]}
+                          aria-label="Remove item from cart"
                         >
-                          <DeleteIcon />
                         </IconButton>
                       </TableCell>
                     </TableRow>

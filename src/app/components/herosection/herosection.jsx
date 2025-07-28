@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Box, Button, Container, Typography, styled } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -161,6 +162,11 @@ const HeroImage = styled(Box)(({ theme }) => ({
 }));
 
 const HeroSection = () => {
+  const router = useRouter();
+  
+  const handleShopNow = () => {
+    router.push('/offers');
+  };
   return (
     <ThemeProvider theme={theme}>
       <HeroContainer>
@@ -180,6 +186,7 @@ const HeroSection = () => {
                   <Button 
                     variant="contained"
                     size="large"
+                    onClick={handleShopNow}
                     sx={{
                       padding: '12px 40px',
                       fontWeight: 600,
@@ -193,7 +200,7 @@ const HeroSection = () => {
                       boxShadow: '0 4px 14px rgba(0, 0, 0, 0.25)',
                     }}
                   >
-                    Shop Now
+                    Offers
                   </Button>
                   <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
                     <Box display="flex" gap={2} alignItems="center" sx={{ height: '48px', alignItems: 'center', paddingTop: '60px' }}>

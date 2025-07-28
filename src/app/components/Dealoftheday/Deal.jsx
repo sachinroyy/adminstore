@@ -194,7 +194,7 @@ export default function DealOfTheDay() {
                     ${deal.price.toFixed(2)}
                   </Typography>
                 </Box>
-                <Button 
+                {/* <Button 
                   variant="contained" 
                   fullWidth 
                   startIcon={<ShoppingCartIcon />}
@@ -206,7 +206,7 @@ export default function DealOfTheDay() {
                   }}
                 >
                   Add to Cart
-                </Button>
+                </Button> */}
               </CardContent>
             </ProductCard>
           </Box>

@@ -116,51 +116,117 @@ export const CartProvider = ({ children }) => {
         body: JSON.stringify({ productId }),
       });
       
-      if (res.ok) {
-        const data = await res.json();
-        setCart({
-          items: data.items,
-          total: data.totalPrice,
-          totalItems: data.totalItems,
-          totalPrice: data.totalPrice
-        });
-        return { success: true };
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to remove item from cart');
       }
-      return { success: false };
+      
+      const data = await res.json();
+      
+      // Update cart state with the server response
+      const updatedCart = {
+        items: data.items || [],
+        total: data.totalPrice || 0,
+        totalItems: data.totalItems || 0,
+        totalPrice: data.totalPrice || 0
+      };
+      
+      setCart(updatedCart);
+      return { 
+        success: true, 
+        data: updatedCart 
+      };
+      
     } catch (error) {
       console.error('Error removing from cart:', error);
-      return { success: false };
+      
+      // Re-fetch cart to ensure consistency
+      if (session) {
+        await fetchCart();
+      }
+      
+      return { 
+        success: false, 
+        error: error.message || 'Failed to remove item from cart' 
+      };
     }
   };
 
-  const updateQuantity = async (productId, quantity) => {
-    if (quantity < 1) {
+  const updateQuantity = async (productId, newQuantity) => {
+    // Ensure quantity is a valid number
+    const quantity = Math.max(0, Math.min(100, Number(newQuantity) || 1));
+    
+    // If quantity is 0 or less, remove the item from cart
+    if (quantity <= 0) {
       return await removeFromCart(productId);
     }
 
     try {
+      // Optimistic UI update
+      setCart(prevCart => {
+        const updatedItems = prevCart.items.map(item => 
+          item.productId === productId 
+            ? { ...item, quantity }
+            : item
+        );
+        
+        const totalItems = updatedItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+        const totalPrice = updatedItems.reduce((sum, item) => 
+          sum + (parseFloat(item.price) * (item.quantity || 0)), 0);
+        
+        return {
+          ...prevCart,
+          items: updatedItems,
+          total: totalPrice,
+          totalItems,
+          totalPrice
+        };
+      });
+
       const res = await fetch('/api/cart/items', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ productId, quantity }),
+        body: JSON.stringify({ 
+          productId, 
+          quantity,
+          _t: Date.now() // Cache buster
+        }),
       });
       
-      if (res.ok) {
-        const data = await res.json();
-        setCart({
-          items: data.items,
-          total: data.totalPrice,
-          totalItems: data.totalItems,
-          totalPrice: data.totalPrice
-        });
-        return { success: true };
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to update quantity');
       }
-      return { success: false };
+      
+      const data = await res.json();
+      
+      // Update with server response
+      setCart({
+        items: data.items || [],
+        total: data.totalPrice || 0,
+        totalItems: data.totalItems || 0,
+        totalPrice: data.totalPrice || 0
+      });
+      
+      return { 
+        success: true,
+        data: data
+      };
+      
     } catch (error) {
       console.error('Error updating quantity:', error);
-      return { success: false };
+      
+      // Re-fetch cart to ensure consistency
+      if (session) {
+        await fetchCart();
+      }
+      
+      return { 
+        success: false, 
+        error: error.message || 'Failed to update quantity' 
+      };
     }
   };
 

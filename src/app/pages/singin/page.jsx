@@ -6,11 +6,8 @@ import { useRouter } from "next/navigation";
 import { 
   Box, 
   Button, 
-  Card, 
-  CardContent, 
   Container, 
   Divider, 
-  Grid, 
   Typography, 
   CircularProgress,
   Alert,
@@ -28,7 +25,52 @@ export default function SignInPage() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.push('/'); // Redirect to home page after sign in
+      // Check if there's a product to add to cart
+      const productToAdd = JSON.parse(sessionStorage.getItem('productToAdd') || 'null');
+      
+      if (productToAdd) {
+        // Remove the product from sessionStorage
+        sessionStorage.removeItem('productToAdd');
+        
+        // Add the product to cart
+        fetch('/api/cart', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            productId: productToAdd._id,
+            name: productToAdd.name,
+            price: productToAdd.price,
+            image: productToAdd.image,
+            quantity: productToAdd.quantity || 1
+          }),
+        })
+        .then(response => response.json())
+        .then(() => {
+          // Show success message
+          window.dispatchEvent(new CustomEvent('show-snackbar', {
+            detail: { 
+              message: 'Product added to cart!',
+              severity: 'success'
+            }
+          }));
+        })
+        .catch(error => {
+          console.error('Error adding product to cart:', error);
+          window.dispatchEvent(new CustomEvent('show-snackbar', {
+            detail: { 
+              message: 'Failed to add product to cart',
+              severity: 'error'
+            }
+          }));
+        });
+      }
+      
+      // Redirect to the original page or home
+      const urlParams = new URLSearchParams(window.location.search);
+      const callbackUrl = urlParams.get('callbackUrl') || '/';
+      router.push(callbackUrl);
     }
   }, [status, router]);
 

@@ -2,8 +2,10 @@
 
 import { Box, Stack, Button, Typography } from "@mui/material";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const ImageRowMUI = () => {
+  const router = useRouter();
   return (
     <Box sx={{ maxWidth: { xs: '100%', lg: 1200, xl: 1850 }, width: '100%', px: { xs: 3, sm: 2, md: 3 }, mx: 'auto', py: { xs: 2, md: 3 } }}>
       <Stack 
@@ -42,14 +44,13 @@ const ImageRowMUI = () => {
             },
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
+            justifyContent: 'flex-end',
             alignItems: 'flex-start',
             borderRadius: 8,
             opacity: 1,
             transition: 'opacity 0.3s ease',
             color: 'white',
-            p: { xs: 2, sm: 2.5, md: 3 },
-            textAlign: 'left'
+            p: 2,
           }}>
             <Typography variant={{ xs: 'h6', sm: 'h5', md: 'h5' }} sx={{ 
               mb: 1, 
@@ -77,10 +78,19 @@ const ImageRowMUI = () => {
               variant="contained" 
               color="primary" 
               size="small"
+              onClick={() => router.push('/offers')}
               sx={{
                 fontSize: { xs: '0.75rem', sm: '0.875rem' },
                 py: { xs: 0.5, sm: 1 },
-                px: { xs: 1, sm: 2 }
+                px: { xs: 1, sm: 2 },
+                backgroundColor: 'black',
+                color: 'white',
+                fontWeight: 600,
+                mt: 2,
+                '&:hover': {
+                  backgroundColor: '#222',
+                  color: 'white'
+                }
               }}
             >
               Shop Now
@@ -116,14 +126,13 @@ const ImageRowMUI = () => {
             },
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
+            justifyContent: 'flex-end',
             alignItems: 'flex-start',
             borderRadius: 8,
             opacity: 1,
             transition: 'opacity 0.3s ease',
             color: 'white',
-            p: { xs: 2, sm: 2.5, md: 3 },
-            textAlign: 'left'
+            p: 2,
           }}>
             <Typography variant={{ xs: 'h6', sm: 'h5', md: 'h5' }} sx={{ 
               mb: 1, 
@@ -151,10 +160,19 @@ const ImageRowMUI = () => {
               variant="contained" 
               color="primary" 
               size="small"
+              onClick={() => router.push('/offers')}
               sx={{
                 fontSize: { xs: '0.75rem', sm: '0.875rem' },
                 py: { xs: 0.5, sm: 1 },
-                px: { xs: 1, sm: 2 }
+                px: { xs: 1, sm: 2 },
+                backgroundColor: 'black',
+                color: 'white',
+                fontWeight: 600,
+                mt: 2,
+                '&:hover': {
+                  backgroundColor: '#222',
+                  color: 'white'
+                }
               }}
             >
               Shop Now
@@ -190,7 +208,7 @@ const ImageRowMUI = () => {
             },
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
+            justifyContent: 'flex-end',
             alignItems: 'flex-start',
             borderRadius: 8,
             opacity: 1,
@@ -225,10 +243,19 @@ const ImageRowMUI = () => {
               variant="contained" 
               color="primary" 
               size="small"
+              onClick={() => router.push('/offers')}
               sx={{
                 fontSize: { xs: '0.75rem', sm: '0.875rem' },
                 py: { xs: 0.5, sm: 1 },
-                px: { xs: 1, sm: 2 }
+                px: { xs: 1, sm: 2 },
+                backgroundColor: 'black',
+                color: 'white',
+                fontWeight: 600,
+                mt: 2,
+                '&:hover': {
+                  backgroundColor: '#222',
+                  color: 'white'
+                }
               }}
             >
               Shop Now
