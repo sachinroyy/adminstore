@@ -44,25 +44,20 @@ export default function Navbar() {
       path: '/',
       icon: <HomeIcon fontSize="small" />
     },
-    // { 
-    //   label: 'Shop', 
-    //   hasDropdown: true,
-    //   items: [
-    //     { label: 'Best Sellers', path: '/shop' },
-    //     { label: 'Recomma', path: '/shop?filter=new' },
-    //     { label: 'Best Sellers', path: '/shop?filter=bestsellers' },
-    //     { label: 'On Sale', path: '/shop?filter=sale' },
-    //   ]
-    // },
+    { 
+      label: 'Shop', 
+      hasDropdown: true,
+      items: [
+        { label: 'Best Sellers', path: '/bestseller' },
+        { label: 'offers', path: '/offers' },
+        
+       
+      ]
+    },
     // { 
     //   label: 'Categories', 
     //   hasDropdown: true,
-    //   items: [
-    //     { label: 'Fruits', path: '/categories/fruits' },
-    //     { label: 'Vegetables', path: '/categories/vegetables' },
-    //     { label: 'Beverages', path: '/categories/beverages' },
-    //     { label: 'Dairy', path: '/categories/dairy' },
-    //   ]
+      
     // },
     { 
       label: 'Features', 
