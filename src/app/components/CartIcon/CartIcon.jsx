@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, IconButton, Tooltip } from '@mui/material';
+import { Badge, IconButton, Tooltip, useTheme, useMediaQuery } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useRouter } from 'next/navigation';
 import { useCart } from "../../../context/CartContext";
@@ -8,6 +8,8 @@ import { useCart } from "../../../context/CartContext";
 export default function CartIcon() {
   const router = useRouter();
   const { cart } = useCart();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
     <Tooltip title="View Cart">
@@ -15,15 +17,21 @@ export default function CartIcon() {
         color="inherit" 
         onClick={() => router.push('/cart')}
         sx={{
-          position: 'relative',
-          '&:hover': {
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          color: 'text.primary',
+          width: '48px',
+          height: '48px',
+          margin: '0 4px',
+          '& .MuiSvgIcon-root': {
+            fontSize: '1.8rem'
           },
+          '&:hover': {
+            backgroundColor: 'rgba(0, 0, 0, 0.04)'
+          }
         }}
       >
         <Badge 
           badgeContent={cart?.totalItems || 0} 
-          color="secondary"
+          color="error"
           overlap="circular"
           sx={{
             '& .MuiBadge-badge': {
@@ -34,6 +42,7 @@ export default function CartIcon() {
               minWidth: '16px',
               fontSize: '0.7rem',
               fontWeight: 'bold',
+              border: '1px solid #fff'
             },
           }}
         >

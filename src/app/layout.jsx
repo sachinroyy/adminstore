@@ -9,6 +9,8 @@ import { Divider } from '@mui/material';
 import InformationBar from "./components/Header/information";
 import Navbar from "./components/Header/navbar";
 import { Providers } from './providers';
+import FloatingCartButton from './components/FloatingCartButton/FloatingCartButton';
+import { CartProvider } from '../context/CartContext';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,19 +32,22 @@ export default function RootLayout({ children }) {
       </head>
       <body suppressHydrationWarning>
         <Providers>
-          <div className="app-container">
-            <OffersBar />
-            <Divider />
-            <InformationBar />
-            <Divider />
-            <Header />
-            <Navbar />
-            <Divider />
-            <main className="main-content">
-              {children}
-            </main>
-            <Footer />
-          </div>
+          <CartProvider>
+            <div className="app-container">
+              <OffersBar />
+              <Divider />
+              <InformationBar />
+              <Divider />
+              <Header />
+              <Navbar />
+              <Divider />
+              <main className="main-content">
+                {children}
+              </main>
+              <FloatingCartButton />
+              <Footer />
+            </div>
+          </CartProvider>
         </Providers>
       </body>
     </html>
