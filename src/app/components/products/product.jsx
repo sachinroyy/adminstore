@@ -3,22 +3,22 @@
 
 import { useEffect, useState } from "react";
 import { 
+  Box, 
+  Button, 
   Card, 
   CardContent, 
   CardMedia, 
-  Typography, 
-  Grid, 
+  CircularProgress,
+  Chip,
   Container, 
-  CircularProgress, 
-  Box,
-  Button, 
-  IconButton,
-  Rating,
+  Grid, 
+  IconButton, 
+  Typography, 
   useTheme,
-  Snackbar,
-  Alert,
   useMediaQuery
 } from '@mui/material';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import { AddShoppingCart, FavoriteBorder, Favorite, Share, FlashOn } from '@mui/icons-material';
 import { useCart } from "../../../context/CartContext";
 import { useSession } from 'next-auth/react';
@@ -249,39 +249,45 @@ const Products = ({ categoryId }) => {
         </Button>
       </Box>
       
-      <Grid container spacing={6} justifyContent="center" sx={{ width: '100%', mb: 4, minHeight: showAll ? 'auto' : '800px' }}>
+      <Grid container spacing={2} sx={{ 
+        width: '100%', 
+        mb: 4, 
+        minHeight: showAll ? 'auto' : '800px',
+        mx: 'auto',
+        maxWidth: '1400px',
+        px: { xs: 1, sm: 2 },
+        justifyContent: { xs: 'center', sm: 'flex-start' }
+      }}>
         {(showAll ? products : products.slice((page - 1) * productsPerPage, page * productsPerPage))
           .filter(product => {
-            // Only show products that are not in cart or have quantity > 0
             const cartItem = cart.items?.find(item => item.productId === product._id);
             return !cartItem || cartItem.quantity > 0;
           })
           .map((product) => (
-          <Grid item key={product._id} xs={4} sm={4} md={3} lg={3} sx={{ display: 'flex', justifyContent: 'center' }}>
+          <Grid item key={product._id} xs={3} sm={4} md={3} lg={3} sx={{ 
+            display: 'flex', 
+            justifyContent: 'center',
+            width: '100%',
+            maxWidth: { xs: '43%', sm: '31%', md: '32%', lg: '19%' },
+            flex: '0 0 auto',
+            p: 1
+          }}>
             <Card 
               sx={{ 
-                width: '400px',
-                maxWidth: 300,
-                height: 400,
+                width: { xs: '160px', sm: '360px' ,md: '360px',lg: '400px' },
+                height: { xs: '200px', sm: '260px',md: '320px',lg: '360px' },
                 display: 'flex',
                 flexDirection: 'column',
-                borderRadius: '16px',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.06)',
+                borderRadius: '8px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                 overflow: 'hidden',
                 position: 'relative',
-                transition: 'all 0.3s ease-in-out',
                 cursor: 'pointer',
+                backgroundColor: '#fff',
+                transition: 'transform 0.2s ease-in-out',
                 '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: '0 12px 28px rgba(0, 0, 0, 0.12)',
-                  '& .product-actions': {
-                    opacity: 1,
-                    transform: 'translateY(0)',
-                  },
-                  '& .product-image': {
-                    transform: 'scale(1.05)',
-                  }
-                },
+                  transform: { xs: 'none', sm: 'translateY(-2px)' }
+                }
               }}
               onClick={(e) => {
                 if (e.target.closest('.product-actions') || e.target.closest('.wishlist-button')) {
@@ -308,38 +314,21 @@ const Products = ({ categoryId }) => {
               )}
 
               {/* Wishlist Button */}
-              <IconButton
-                aria-label="add to wishlist"
-                sx={{
-                  position: 'absolute',
-                  top: 8,
-                  right: 8,
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  backdropFilter: 'blur(4px)',
-                  zIndex: 1,
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    color: 'error.main'
-                  },
-                  transition: 'all 0.3s ease',
-                }}
-              >
-                <FavoriteBorder />
-              </IconButton>
+
 
               {/* Product Image */}
               <Box sx={{ 
                 width: '100%',
-                height: '300px',
-                minHeight: '300px',
+                height: { xs: '160px', sm: '220px', md: '250px' },
                 overflow: 'hidden',
                 position: 'relative',
-                backgroundColor: '#f8f9fa',
+                backgroundColor: '#fff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                padding: '20px',
-                boxSizing: 'border-box'
+                padding: '16px',
+                boxSizing: 'border-box',
+                borderBottom: '1px solid #f0f0f0'
               }}>
                 <CardMedia
                   component="img"
@@ -352,28 +341,24 @@ const Products = ({ categoryId }) => {
                     maxWidth: '100%',
                     maxHeight: '100%',
                     objectFit: 'contain',
-                    transition: 'transform 0.5s ease',
                     display: 'block',
                     margin: '0 auto'
                   }}
                 />
-                
-                {/* Quick Actions */}
-                <Box className="product-actions" sx={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  display: 'flex',
-                  justifyContent: 'center',
-                  gap: 1,
-                  p: 1,
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  backdropFilter: 'blur(4px)',
-                  transform: 'translateY(100%)',
-                  opacity: 0,
-                  transition: 'all 0.3s ease',
-                }}>
+              </Box>
+
+              {/* Add to Cart Button */}
+              <Box sx={{ 
+                p: { xs: 0.5, sm: 2 },
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: { xs: 0.5, sm: 1 },
+                borderBottom: '1px solid #f0f0f0',
+                minHeight: { xs: 'auto', sm: '72px' },
+                flexGrow: 1
+              }}>
                   {getCartQuantity(product._id) >= 1 ? (
                     <Box 
                       sx={{ 
@@ -381,11 +366,13 @@ const Products = ({ categoryId }) => {
                         alignItems: 'center',
                         gap: 1,
                         backgroundColor: 'background.paper',
-                        borderRadius: 1,
-                        px: 1,
-                        py: 0.5,
-                        width: '100%',
-                        justifyContent: 'space-between'
+                        '& .MuiButton-root': {
+                          minWidth: 'auto',
+                          padding: '4px 8px',
+                          '&:hover': {
+                            backgroundColor: 'transparent'
+                          }
+                        }
                       }}
                     >
                       <IconButton 
@@ -396,7 +383,14 @@ const Products = ({ categoryId }) => {
                         }}
                         disabled={product.stock <= 0}
                         color="primary"
-                        sx={{ p: 0.5 }}
+                        sx={{ 
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          borderRadius: 1,
+                          minWidth: '32px',
+                          height: '32px',
+                          p: 0.5
+                        }}
                       >
                         -
                       </IconButton>
@@ -423,8 +417,8 @@ const Products = ({ categoryId }) => {
                   ) : getCartQuantity(product._id) === 0 ? (
                     <Button 
                       size="small" 
-                      color="primary"
-                      startIcon={<CheckCircleOutlineIcon />}
+                      color="error"
+                      startIcon={<CheckCircleOutlineIcon sx={{ display: { xs: 'none', sm: 'inline-flex' }, color: 'error.main' }} />}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleAddToCart(product, 1);
@@ -432,15 +426,31 @@ const Products = ({ categoryId }) => {
                       variant="outlined"
                       disabled={product.stock <= 0}
                       fullWidth
-                      sx={{ whiteSpace: 'nowrap' }}
+                      sx={{ 
+                        whiteSpace: 'nowrap',
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        px: { xs: 0.5, sm: 1 },
+                        color: 'error.main',
+                        borderColor: 'error.main',
+                        '&:hover': {
+                          borderColor: 'error.dark',
+                          backgroundColor: 'error.light',
+                          color: 'error.dark'
+                        },
+                        '& .MuiButton-startIcon': {
+                          mr: { xs: 0.5, sm: 1 },
+                          color: 'error.main'
+                        }
+                      }}
                     >
-                      Added to Cart
+                      <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Added to Cart</Box>
+                      <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>Added</Box>
                     </Button>
                   ) : (
                     <Button 
                       size="small" 
-                      color="primary"
-                      startIcon={<AddShoppingCartIcon />}
+                      color="error"
+                      startIcon={<AddShoppingCartIcon sx={{ display: { xs: 'none', sm: 'inline-flex' }, color: 'error.main' }} />}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleAddToCart(product, 1);
@@ -448,13 +458,28 @@ const Products = ({ categoryId }) => {
                       variant="outlined"
                       disabled={product.stock <= 0}
                       fullWidth
-                      sx={{ whiteSpace: 'nowrap' }}
+                      sx={{ 
+                        whiteSpace: 'nowrap',
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        px: { xs: 0.5, sm: 1 },
+                        color: 'error.main',
+                        borderColor: 'error.main',
+                        '&:hover': {
+                          borderColor: 'error.dark',
+                          backgroundColor: 'error.light',
+                          color: 'error.dark'
+                        },
+                        '& .MuiButton-startIcon': {
+                          mr: { xs: 0.5, sm: 1 },
+                          color: 'error.main'
+                        }
+                      }}
                     >
-                      Add to Cart
+                      <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Add to Cart</Box>
+                      <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>Add</Box>
                     </Button>
                   )}
                 </Box>
-              </Box>
 
               {/* Product Info */}
               <CardContent sx={{ 
@@ -466,10 +491,13 @@ const Products = ({ categoryId }) => {
               }}>
                 <Box sx={{ 
                   display: 'flex', 
+                  flexDirection: 'row',
                   justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  gap: 2,
-                  mb: 1.5
+                  alignItems: 'center',
+                  gap: 1,
+                  mb: { xs: 0.5, sm: 1.5 },
+                  width: '100%',
+                  textAlign: 'left'
                 }}>
                   {/* Product Name */}
                   <Typography 
@@ -482,39 +510,37 @@ const Products = ({ categoryId }) => {
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',
                       overflow: 'hidden',
-                      minHeight: '2.8em',
-                      lineHeight: '1.4',
+                      minHeight: 'auto',
+                      lineHeight: '1.3',
                       m: 0,
+                      fontSize: { xs: '0.8rem', sm: '1rem' },
+                      pr: 1,
+                      textAlign: 'left'
                     }}
                   >
                     {product.name || 'Product Name'}
                   </Typography>
 
                   {/* Price */}
-                  <Box sx={{ textAlign: 'right' }}>
+                  <Box sx={{ 
+                    textAlign: 'right',
+                    flexShrink: 0,
+                    width: 'auto'
+                  }}>
                     <Typography 
                       variant="h6" 
                       color="primary" 
                       fontWeight={700}
-                      sx={{ lineHeight: 1.2, whiteSpace: 'nowrap' }}
+                      sx={{ 
+                        lineHeight: 1.2, 
+                        whiteSpace: 'nowrap',
+                        fontSize: { xs: '0.8rem', sm: '1.25rem' },
+                        textAlign: 'right'
+                      }}
                     >
-                      ₹{(product.price * 0.9)?.toFixed(2) || '999.00'}
+                      ₹{(product.price * 0.9)?.toFixed(0) || '999'}
                     </Typography>
                   </Box>
-                </Box>
-
-                {/* Rating */}
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
-                  <Rating 
-                    value={product.rating || 4.5} 
-                    precision={0.5} 
-                    size="small" 
-                    readOnly 
-                    sx={{ color: '#ffb400', mr: 1 }}
-                  />
-                  <Typography variant="caption" color="text.secondary">
-                    ({product.reviewCount || '24'})
-                  </Typography>
                 </Box>
 
                 {/* Discount and Original Price */}
