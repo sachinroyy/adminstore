@@ -33,9 +33,12 @@ export default function FeaturesPage() {
     <Container maxWidth="lg" sx={{ py: 8 }}>
       <Grid container spacing={4} justifyContent="center">
         {features.map((feature, idx) => (
-          <Grid item xs={12} sm={6} md={3} key={feature.title}>
+          <Grid item xs={12} sm={6} md={3} key={feature.title} sx={{ display: 'flex', justifyContent: 'center' }}>
             <Card
               sx={{
+                width: { xs: 390, sm: 'auto' },
+                maxWidth: { xs: '100%', sm: 'none' },
+                height: 'auto',
                 p: 3,
                 textAlign: 'center',
                 boxShadow: 3,

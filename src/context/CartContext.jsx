@@ -153,12 +153,48 @@ export const CartProvider = ({ children }) => {
   };
 
   const updateQuantity = async (productId, newQuantity) => {
-    // Ensure quantity is a valid number
-    const quantity = Math.max(0, Math.min(100, Number(newQuantity) || 1));
+    // Ensure quantity is a valid number; allow 0
+    const parsed = parseInt(newQuantity, 10);
+    const quantity = Math.max(0, Math.min(100, Number.isNaN(parsed) ? 0 : parsed));
     
-    // If quantity is 0 or less, remove the item from cart
+    // If quantity is 0 or less, remove the item from cart using PUT (quantity: 0)
     if (quantity <= 0) {
-      return await removeFromCart(productId);
+      // Optimistic removal
+      setCart(prevCart => {
+        const updatedItems = prevCart.items.filter(item => item.productId !== productId);
+        const totalItems = updatedItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+        const totalPrice = updatedItems.reduce((sum, item) => sum + (parseFloat(item.price) * (item.quantity || 0)), 0);
+        return {
+          ...prevCart,
+          items: updatedItems,
+          total: totalPrice,
+          totalItems,
+          totalPrice
+        };
+      });
+
+      try {
+        const res = await fetch('/api/cart/items', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId, quantity: 0 })
+        });
+        if (!res.ok) {
+          throw new Error('Failed to remove item');
+        }
+        const data = await res.json();
+        setCart({
+          items: data.items || [],
+          total: data.totalPrice || 0,
+          totalItems: data.totalItems || 0,
+          totalPrice: data.totalPrice || 0
+        });
+        return { success: true };
+      } catch (error) {
+        console.error('Error removing item:', error);
+        if (session) await fetchCart();
+        return { success: false, error: error.message };
+      }
     }
 
     try {

@@ -128,6 +128,12 @@ const Products = ({ categoryId }) => {
     } else {
       // If quantity would be 0 or less, remove the item from cart
       await updateQuantity(product._id, 0);
+      // Show feedback
+      setSnackbar({
+        open: true,
+        message: 'Removed from cart',
+        severity: 'success'
+      });
     }
   };
 
@@ -259,10 +265,6 @@ const Products = ({ categoryId }) => {
         justifyContent: { xs: 'center', sm: 'flex-start' }
       }}>
         {(showAll ? products : products.slice((page - 1) * productsPerPage, page * productsPerPage))
-          .filter(product => {
-            const cartItem = cart.items?.find(item => item.productId === product._id);
-            return !cartItem || cartItem.quantity > 0;
-          })
           .map((product) => (
           <Grid item key={product._id} xs={3} sm={4} md={3} lg={3} sx={{ 
             display: 'flex', 
@@ -354,10 +356,20 @@ const Products = ({ categoryId }) => {
                 flexDirection: { xs: 'column', sm: 'row' },
                 justifyContent: 'center',
                 alignItems: 'center',
+                
                 gap: { xs: 0.5, sm: 1 },
                 borderBottom: '1px solid #f0f0f0',
                 minHeight: { xs: 'auto', sm: '72px' },
-                flexGrow: 1
+                flexGrow: 1,
+                position: { xs: 'absolute', sm: 'static' },
+                left: { xs: '50%', sm: 'auto' },
+                right: { xs: 'auto', sm: 'auto' },
+                bottom: { xs: '25%', sm: 'auto' },
+                width: { xs: '80%', sm: 'auto' },
+                transform: { xs: 'translateX(-50%)', sm: 'none' },
+                zIndex: { xs: 2, sm: 'auto' },
+                backgroundColor: { xs: 'rgba(255,255,255,0.9)', sm: 'transparent' },
+                backdropFilter: { xs: 'saturate(120%) blur(2px)', sm: 'none' }
               }}>
                   {getCartQuantity(product._id) >= 1 ? (
                     <Box 
@@ -418,7 +430,7 @@ const Products = ({ categoryId }) => {
                     <Button 
                       size="small" 
                       color="error"
-                      startIcon={<CheckCircleOutlineIcon sx={{ display: { xs: 'none', sm: 'inline-flex' }, color: 'error.main' }} />}
+                      startIcon={<AddShoppingCartIcon sx={{ display: { xs: 'none', sm: 'inline-flex' }, color: 'error.main' }} />}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleAddToCart(product, 1);
@@ -443,8 +455,8 @@ const Products = ({ categoryId }) => {
                         }
                       }}
                     >
-                      <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Added to Cart</Box>
-                      <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>Added</Box>
+                      <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Add to Cart</Box>
+                      <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>Add</Box>
                     </Button>
                   ) : (
                     <Button 

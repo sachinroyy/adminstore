@@ -46,8 +46,8 @@ export default function BestsellerPage() {
       <Grid container spacing={4}>
         {products.map((product, idx) => (
           <Grid item xs={12} sm={6} md={3} key={idx}>
-            <Card sx={{ width: 350, height: 400, p: 2, boxShadow: 3, borderRadius: 3, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-6px)', boxShadow: 8 } }}>
-              <Box sx={{ position: 'absolute', top: 18, left: 18, zIndex: 2 }}>
+            <Card sx={{ width: 390, height: 400, p: 2, boxShadow: 3, borderRadius: 3, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-6px)', boxShadow: 8 } }}>
+              <Box sx={{ position: 'absolute', top: 18, left: 20, zIndex: 2 }}>
                 <Chip label="Bestseller" color="warning" size="small" sx={{ fontWeight: 700 }} />
               </Box>
               <CardMedia

@@ -67,13 +67,16 @@ export default function OffersPage() {
   return (
     <Box sx={{ background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%)', minHeight: '100vh', py: 6 }}>
       <Container maxWidth="lg">
-        <Typography variant="h3" align="center" fontWeight={700} mb={4} color="black">
-          Unlock Amazing Savings on Your Favorite Snacks & Essentials!
+        <Typography variant="h3" align="center" fontWeight={700} mb={1} color="black">
+          Unlock Amazing 
+        </Typography>
+        <Typography variant="h5" align="center" fontWeight={700} mb={4} color="black">
+           Savings on Your Favorite Snacks & Essentials!
         </Typography>
         <Grid container spacing={4}>
           {dummyOffers.map((item, idx) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={idx}>
-              <Card sx={{ height: 300, width: 250, mx: 'auto', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: 3, bgcolor: 'white', borderRadius: 3, overflow: 'hidden' }}>
+              <Card sx={{ height: 300, width: 390, mx: 'auto', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: 3, bgcolor: 'white', borderRadius: 3, overflow: 'hidden' }}>
   {/* Image: 60% of card height */}
   <Box sx={{ flex: '0 0 50%', height: '50%' }}>
     <CardMedia

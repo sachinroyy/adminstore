@@ -60,7 +60,7 @@ export default function CartPage() {
   const [updatingItems, setUpdatingItems] = useState({});
 
   const handleQuantityChange = async (productId, newQuantity) => {
-    const quantity = Math.max(1, Math.min(100, parseInt(newQuantity, 10) || 1));
+    const quantity = Math.max(0, Math.min(100, parseInt(newQuantity, 10) || 0));
     
     try {
       setUpdatingItems(prev => ({ ...prev, [productId]: true }));
@@ -91,25 +91,8 @@ export default function CartPage() {
   };
 
   const decrementQuantity = async (productId, currentQuantity) => {
-    if (currentQuantity <= 1) {
-      // If quantity is 1 or less, remove the item
-      try {
-        setUpdatingItems(prev => ({ ...prev, [productId]: true }));
-        await removeFromCart(productId);
-      } catch (error) {
-        console.error('Error removing item:', error);
-        setSnackbar({
-          open: true,
-          message: 'Failed to remove item from cart',
-          severity: 'error'
-        });
-      } finally {
-        setUpdatingItems(prev => ({ ...prev, [productId]: false }));
-      }
-    } else {
-      // Otherwise, just decrement the quantity
-      await handleQuantityChange(productId, currentQuantity - 1);
-    }
+    // Always remove item on decrement
+    await handleQuantityChange(productId, 0);
   };
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -494,13 +477,11 @@ export default function CartPage() {
                             onClick={() => decrementQuantity(item.productId, item.quantity)}
                             disabled={updatingItems[item.productId]}
                             size="small"
-                            aria-label={item.quantity <= 1 ? "Remove item" : "Decrease quantity"}
-                            color={item.quantity <= 1 ? "error" : "default"}
+                            aria-label={"Remove item"}
+                            color={"error"}
                           >
                             {updatingItems[item.productId] ? (
                               <CircularProgress size={20} />
-                            ) : item.quantity <= 1 ? (
-                              <DeleteIcon fontSize="small" />
                             ) : (
                               <RemoveIcon fontSize="small" />
                             )}
