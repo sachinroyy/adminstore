@@ -1,6 +1,5 @@
 
 "use client";
-
 import { useEffect, useState } from "react";
 import { 
   Box, 
@@ -161,15 +160,28 @@ const Products = ({ categoryId }) => {
         console.log('API Response Status:', res.status);
         const data = await res.json();
         console.log('API Response Data:', data);
-        
-        // Check if the response has a data property or is the array directly
-        const productsData = data.data || data.products || data;
+
+        // Support nested shape: { success, data: { data: [...] } }
+        const productsData = (data && data.data && Array.isArray(data.data.data))
+          ? data.data.data
+          : (Array.isArray(data?.data) ? data.data : (data?.products || data));
+
         console.log('Extracted Products:', productsData);
-        
-        setProducts(Array.isArray(productsData) ? productsData : []);
+
+        // Normalize to ensure required fields
+        const normalized = Array.isArray(productsData)
+          ? productsData.map((p, i) => ({
+              ...p,
+              _id: p._id || p.id || `${p.name || 'item'}-${i}`,
+              image: p.image || (Array.isArray(p.images) && p.images[0]) || 'https://via.placeholder.com/300x300',
+            }))
+          : [];
+
+        setProducts(normalized);
         setLoading(false);
       } catch (err) {
         console.error("Error fetching products:", err);
+
         setLoading(false);
       }
     };
