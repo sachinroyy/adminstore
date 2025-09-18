@@ -45,16 +45,16 @@ export default function BestsellerPage() {
       </Typography>
       <Grid container spacing={4}>
         {products.map((product, idx) => (
-          <Grid item xs={12} sm={6} md={3} key={idx}>
-            <Card sx={{ width: 390, height: 400, p: 2, boxShadow: 3, borderRadius: 3, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-6px)', boxShadow: 8 } }}>
+          <Grid item  xs={12} sm={6} md={3} lg={2}  key={idx}>
+            <Card sx={{ width: 350, height: 400, p: 2, boxShadow: 3, borderRadius: 3, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-6px)', boxShadow: 8 } }}>
               <Box sx={{ position: 'absolute', top: 18, left: 20, zIndex: 2 }}>
                 <Chip label="Bestseller" color="warning" size="small" sx={{ fontWeight: 700 }} />
               </Box>
               <CardMedia
   component="img"
   image={product.image}
-  alt={product.name}
-  sx={{ width: 220, height: 180, objectFit: 'cover', borderRadius: 2, mb: 1, mt: 2, boxShadow: 2 }}
+  alt={product.name}    
+  sx={{ width: 200, height: 180, objectFit: 'cover', borderRadius: 2, mb: 1, mt: 2, boxShadow: 2 }}
   onError={e => { e.target.src = 'https://via.placeholder.com/220x180?text=Product'; }}
 />
               <CardContent sx={{ flexGrow: 1 }}>

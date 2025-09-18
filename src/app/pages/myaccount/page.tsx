@@ -119,7 +119,7 @@ export default function ProfilePage() {
             fullWidth
             variant="contained"
             color="error"
-            onClick={() => signOut({ callbackUrl: '/signin' })}
+            onClick={() => signOut({ callbackUrl: '/pages/singin' })}
             sx={{ mt: 3, mb: 2 }}
           >
             Sign Out

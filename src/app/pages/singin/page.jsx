@@ -1,6 +1,6 @@
 'use client';
 
-import { signIn, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { 
@@ -74,6 +74,45 @@ export default function SignInPage() {
     }
   }, [status, router]);
 
+  const handleGuestLogin = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Create a guest session using the 'guest' provider we just set up
+      const result = await signIn('guest', {
+        redirect: false,
+        callbackUrl: '/'
+      });
+
+      if (result?.error) {
+        console.error('Guest login error:', result.error);
+        setError('Failed to start guest session. Please try again.');
+      } else {
+        // Set a flag in localStorage to identify guest users
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('isGuest', 'true');
+          // Store guest user info for display
+          const guestId = `guest_${Math.random().toString(36).substring(2, 15)}`;
+          localStorage.setItem('guestInfo', JSON.stringify({
+            id: guestId,
+            name: 'Guest User',
+            email: `${guestId}@guest.com`
+          }));
+        }
+        // Redirect to home or the intended URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const callbackUrl = urlParams.get('callbackUrl') || '/';
+        router.push(callbackUrl);
+      }
+    } catch (err) {
+      setError('An error occurred during guest login');
+      console.error('Guest login error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
@@ -96,6 +135,18 @@ export default function SignInPage() {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  // Handle guest user redirection
+  useEffect(() => {
+    if (status === 'unauthenticated' && typeof window !== 'undefined') {
+      const isGuest = localStorage.getItem('isGuest') === 'true';
+      if (isGuest) {
+        // If user was a guest and session expired, clear guest data
+        localStorage.removeItem('isGuest');
+        localStorage.removeItem('guestInfo');
+      }
+    }
+  }, [status]);
 
   if (status === "loading") {
     return (
@@ -165,27 +216,48 @@ export default function SignInPage() {
           
           <Button
             fullWidth
-            variant="outlined"
-            size="large"
+            variant="contained"
+            color="primary"
             onClick={handleGoogleSignIn}
             disabled={isLoading}
-            startIcon={isLoading ? <CircularProgress size={20} /> : <GoogleIcon />}
+            startIcon={!isLoading && <GoogleIcon />}
             sx={{
+              mb: 2,
               py: 1.5,
-              mb: 3,
-              borderWidth: 2,
+              backgroundColor: '#4285F4',
               '&:hover': {
-                borderWidth: 2,
+                backgroundColor: '#357ABD',
               },
-              textTransform: 'none',
-              fontSize: '1rem',
-              borderRadius: 2
             }}
           >
-            {isLoading ? 'Signing in...' : 'Continue with Google'}
+            {isLoading ? <CircularProgress size={24} /> : 'Continue with Google'}
+          </Button>
+
+          <Divider sx={{ my: 3, width: '100%' }}>
+            <Typography variant="body2" color="text.secondary">
+              OR
+            </Typography>
+          </Divider>
+
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={handleGuestLogin}
+            disabled={isLoading}
+            sx={{
+              mb: 2,
+              py: 1.5,
+              borderColor: 'divider',
+              '&:hover': {
+                borderColor: 'primary.main',
+                backgroundColor: 'action.hover',
+              },
+            }}
+          >
+            {isLoading ? <CircularProgress size={24} /> : 'Continue as Guest'}
           </Button>
           
-          <Divider sx={{ width: '100%', mb: 3 }}>
+          <Divider sx={{ my: 3, width: '100%' }}>
             <Typography variant="body2" color="text.secondary">
               or
             </Typography>
